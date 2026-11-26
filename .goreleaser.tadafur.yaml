@@ -1,0 +1,53 @@
+version: 2
+
+project_name: fga
+
+builds:
+  - main: ./cmd/fga/main.go
+    binary: fga
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - "-s -w"
+      - "-X github.com/openfga/cli/internal/build.Version={{ .Version }}"
+      - "-X github.com/openfga/cli/internal/build.Commit={{.Commit}}"
+      - "-X github.com/openfga/cli/internal/build.Date={{.Date}}"
+
+dockers_v2:
+  - images:
+      - ghcr.io/tadafur/openfga-cli
+    tags:
+      - "{{ .Tag }}"
+    dockerfile: .goreleaser.Dockerfile
+    platforms:
+      - linux/amd64
+      - linux/arm64
+    labels:
+      org.opencontainers.image.created: "{{ .Date }}"
+      org.opencontainers.image.title: "{{ .ProjectName }}"
+      org.opencontainers.image.revision: "{{ .FullCommit }}"
+      org.opencontainers.image.version: "{{ .Version }}"
+      org.opencontainers.image.source: "https://github.com/tadafur/openfga-cli"
+
+archives:
+  - files:
+      - README.md
+      - LICENSE
+
+checksum:
+  name_template: "checksums.txt"
+
+release:
+  github:
+    owner: tadafur
+    name: openfga-cli
+  prerelease: auto
+
+changelog:
+  disable: true
